@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Address {
+  Address_id      Int               @id(map: "PK_Address") @default(autoincrement())
+  Address         String?           @db.NVarChar(50)
+  CityRef         Int
+  City            City              @relation(fields: [CityRef], references: [City_id], onUpdate: NoAction, map: "FK_Address_City")
+  CompanySupplier CompanySupplier[]
+  Contract        Contract[]
+  Department      Department[]
+}
+
+model CharacteristicValue {
+  CharacteristicValue_id      Int                           @id(map: "PK_CharacteristicValue") @default(autoincrement())
+  CharacteristicValue         String                        @db.NVarChar(50)
+  CharacteristicRef           Int
+  haracteristic               haracteristic                 @relation("CharacteristicValueTo_haracteristic", fields: [CharacteristicRef], references: [haracteristic_id], onUpdate: NoAction, map: "FK_CharacteristicValue_Сharacteristic")
+  MaterialCharacteristicValue MaterialCharacteristicValue[]
+}
+
+model City {
+  City_id Int       @id(map: "PK_City") @default(autoincrement())
+  City    String?   @db.NVarChar(50)
+  Address Address[]
+}
+
+model CompanySupplier {
+  CompanySupplier_id Int     @id(map: "PK_CompanySupplier") @default(autoincrement())
+  Name               String  @db.NVarChar(50)
+  Email              String  @db.NVarChar(50)
+  BankAccount        String  @db.NVarChar(50)
+  AddressRef         Int
+  Address            Address @relation(fields: [AddressRef], references: [Address_id], onUpdate: NoAction, map: "FK_CompanySupplier_Address")
+  Order              Order[]
+}
+
+model Contract {
+  Contract_id           Int                     @id(map: "PK_Contract") @default(autoincrement())
+  Price                 Int?
+  Deadline              String?                 @db.NVarChar(50)
+  IsDone                Boolean
+  CustomerRef           Int
+  EmployeeRef           Int
+  AddressRef            Int
+  ContractNumber        String?                 @db.NVarChar(50)
+  Address               Address                 @relation(fields: [AddressRef], references: [Address_id], onUpdate: NoAction, map: "FK_Contract_Address")
+  Customer              Customer                @relation(fields: [CustomerRef], references: [Customer_id], onUpdate: NoAction, map: "FK_Contract_Customer")
+  Employee              Employee                @relation(fields: [EmployeeRef], references: [Employee_id], onUpdate: NoAction, map: "FK_Contract_Employee")
+  ContractLandscapeWork ContractLandscapeWork[]
+}
+
+model ContractLandscapeWork {
+  ContractLandscapeWork_id      Int                             @id(map: "PK_ContractLandscapeWork") @default(autoincrement())
+  LandscapeWorkRef              Int
+  ContractRef                   Int
+  Count                         Int
+  Contract                      Contract                        @relation(fields: [ContractRef], references: [Contract_id], onUpdate: NoAction, map: "FK_ContractLandscapeWork_Contract")
+  LandscapeWork                 LandscapeWork                   @relation(fields: [LandscapeWorkRef], references: [LandscapeWork_id], onUpdate: NoAction, map: "FK_ContractLandscapeWork_LandscapeWork")
+}
+
+model Customer {
+  Customer_id Int        @id(map: "PK_Client") @default(autoincrement())
+  Name        String?    @db.NVarChar(50)
+  Surname     String?    @db.NVarChar(50)
+  Phone       String?    @db.NVarChar(50)
+  Contract    Contract[]
+}
+
+model DeliveredMaterials {
+  DeliveredMaterials_id Int                   @id(map: "PK_DeliveredMaterials") @default(autoincrement())
+  DeliveredCount        Int?
+  DeliveryDate          String?               @db.NVarChar(50)
+  MaterialRef   Int
+  Material              Material      @relation(fields: [MaterialRef], references: [Material_id], onUpdate: NoAction, map: "FK_DeliveredMaterials_Material")
+}
+
+model Department {
+  Department_id  Int        @id(map: "PK_Department") @default(autoincrement())
+  DepartmentName String?    @db.NVarChar(50)
+  AddressRef     Int
+  Address        Address    @relation(fields: [AddressRef], references: [Address_id], onUpdate: NoAction, map: "FK_Department_Address")
+  Employee       Employee[]
+}
+
+model Employee {
+  Employee_id         Int                   @id(map: "PK_Employee") @default(autoincrement())
+  Name                String?               @db.NVarChar(50)
+  Surname             String?               @db.NVarChar(50)
+  PositionRef         Int
+  DepartmentRef       Int
+  Email               String?               @db.NVarChar(50)
+  Password            String?               @db.NVarChar(50)
+  Department          Department            @relation(fields: [DepartmentRef], references: [Department_id], onUpdate: NoAction, map: "FK_Employee_Department")
+  Position            Position              @relation(fields: [PositionRef], references: [Position_id], onUpdate: NoAction, map: "FK_Employee_Position")
+  Contract            Contract[]
+  Order               Order[]
+  WorkProcessEmployee WorkProcessEmployee[]
+}
+
+model LandscapeWork {
+  LandscapeWork_id         Int                     @id(map: "PK_LandscapeWork") @default(autoincrement())
+  LandscapeWork            String?                 @db.NVarChar(50)
+  Price                    Int?
+  LandscapeWorkDescription String?                 @db.NText
+  ContractLandscapeWork    ContractLandscapeWork[]
+  MaterialContractLandscapeWork MaterialContractLandscapeWork[]
+  WorkProcess                   WorkProcess[]
+}
+
+model Material {
+  Material_id                   Int                             @id(map: "PK_Material") @default(autoincrement())
+  Name                          String                          @db.NVarChar(50)
+  Price                         Int
+  TimeToGrow                    String?                         @db.NVarChar(50)
+  WateringFrequency             String?                         @db.NVarChar(50)
+  BrightnessPreffered           String?                         @db.NVarChar(50)
+  SortRef                       Int
+  SoilRef                       Int
+  Soil                          Soil                            @relation(fields: [SoilRef], references: [Soil_id], onUpdate: NoAction, map: "FK_Material_Soil")
+  Sort                          Sort                            @relation(fields: [SortRef], references: [Sort_id], onUpdate: NoAction, map: "FK_Material_Sort")
+  MaterialCharacteristicValue   MaterialCharacteristicValue?
+  MaterialContractLandscapeWork MaterialContractLandscapeWork[]
+  OrderedMaterials              OrderedMaterials[]
+  DeliveredMaterials  DeliveredMaterials[]
+  WorkProcessMaterial   WorkProcessMaterial[]
+}
+
+model MaterialContractLandscapeWork {
+  MaterialContractLandscapeWork_id Int                   @id(map: "PK_MaterialContractLandscapeWork") @default(autoincrement())
+  Count                            Int
+  LandscapeWorkRef                 Int
+  MaterialRef                      Int
+  LandscapeWork                    LandscapeWork         @relation(fields: [LandscapeWorkRef], references: [LandscapeWork_id], onUpdate: NoAction, map: "FK_MaterialContractLandscapeWork_LandscapeWork")
+  Material                         Material              @relation(fields: [MaterialRef], references: [Material_id], onUpdate: NoAction, map: "FK_MaterialContractLandscapeWork_Material")
+}
+
+model MaterialType {
+  MaterialType_id Int    @id(map: "PK_MaterialType") @default(autoincrement())
+  MaterialType    String @db.NVarChar(50)
+  Sort            Sort[]
+}
+
+model MaterialCharacteristicValue {
+  Material_id            Int                 @id
+  CharacteristicValue_id Int
+  CharacteristicValue    CharacteristicValue @relation(fields: [CharacteristicValue_id], references: [CharacteristicValue_id], onUpdate: NoAction, map: "FK_MaterialСharacteristicValue_CharacteristicValue")
+  Material               Material            @relation(fields: [Material_id], references: [Material_id], onUpdate: NoAction, map: "FK_MaterialСharacteristicValue_Material")
+}
+
+model Order {
+  Order_id           Int                @id(map: "PK_Order") @default(autoincrement())
+  OrderNumber        String?            @db.NVarChar(50)
+  DateOfOrder        String?            @db.NVarChar(50)
+  Deadline           String?            @db.NVarChar(50)
+  TotalPrice         Int?
+  CompanySupplierRef Int
+  EmployeeRef        Int
+  CompanySupplier    CompanySupplier    @relation(fields: [CompanySupplierRef], references: [CompanySupplier_id], onUpdate: NoAction, map: "FK_Order_CompanySupplier")
+  Employee           Employee           @relation(fields: [EmployeeRef], references: [Employee_id], onUpdate: NoAction, map: "FK_Order_Employee")
+  OrderedMaterials   OrderedMaterials[]
+}
+
+model OrderedMaterials {
+  OrderedMaterials_id Int                  @id(map: "PK_OrderedMaterials") @default(autoincrement())
+  Price               Int?
+  Count               Int?
+  OrderRef            Int
+  MaterialRef         Int
+  Material            Material             @relation(fields: [MaterialRef], references: [Material_id], onUpdate: NoAction, map: "FK_OrderedMaterials_Material")
+  Order               Order                @relation(fields: [OrderRef], references: [Order_id], onUpdate: NoAction, map: "FK_OrderedMaterials_Order")
+}
+
+model Position {
+  Position_id Int        @id(map: "PK_Position") @default(autoincrement())
+  Position    String?    @db.NVarChar(50)
+  Employee    Employee[]
+}
+
+model Soil {
+  Soil_id  Int        @id(map: "PK_Soil") @default(autoincrement())
+  Soil     String     @db.NVarChar(50)
+  Material Material[]
+}
+
+model Sort {
+  Sort_id         Int          @id(map: "PK_Sort") @default(autoincrement())
+  Sort            String       @db.NVarChar(50)
+  MaterialTypeRef Int
+  MaterialType    MaterialType @relation(fields: [MaterialTypeRef], references: [MaterialType_id], onUpdate: NoAction, map: "FK_Sort_MaterialType")
+  Material        Material[]
+}
+
+model Status {
+  Status_id   Int           @id(map: "PK_Status") @default(autoincrement())
+  Status      String?       @db.NVarChar(50)
+  WorkProcess WorkProcess[]
+}
+
+model WorkProcess {
+  WorkProcess_id           Int                   @id(map: "PK_WorkProcess") @default(autoincrement())
+  BeginDate                String?               @db.NVarChar(50)
+  EndDate                  String?               @db.NVarChar(50)
+  Description              String?               @db.NText
+  StatusRef                Int
+  LandscapeWorkRef         Int
+  LandscapeWork            LandscapeWork         @relation(fields: [LandscapeWorkRef], references: [LandscapeWork_id], onUpdate: NoAction, map: "FK_WorkProcess_LandscapeWork")
+  Status                   Status                @relation(fields: [StatusRef], references: [Status_id], onUpdate: NoAction, map: "FK_WorkProcess_Status")
+  WorkProcessEmployee      WorkProcessEmployee?
+  WorkProcessMaterial      WorkProcessMaterial[]
+}
+
+model WorkProcessEmployee {
+  Employee_id    Int
+  WorkProcess_id Int         @id
+  Employee       Employee    @relation(fields: [Employee_id], references: [Employee_id], onUpdate: NoAction, map: "FK_WorkProcessEmployee_Employee")
+  WorkProcess    WorkProcess @relation(fields: [WorkProcess_id], references: [WorkProcess_id], onUpdate: NoAction, map: "FK_WorkProcessEmployee_WorkProcess")
+}
+
+model WorkProcessMaterial {
+  WorkProcessMaterial_id Int                @id(map: "PK_WorkProcessMaterial") @default(autoincrement())
+  WorkProcess_id         Int
+  Material_id  Int
+  Count                  Int?
+  Material              Material            @relation(fields: [Material_id], references: [Material_id], onUpdate: NoAction, map: "FK_WorkProcessMaterial_Material")
+  WorkProcess            WorkProcess        @relation(fields: [WorkProcess_id], references: [WorkProcess_id], onUpdate: NoAction, map: "FK_WorkProcessMaterial_WorkProcess")
+}
+
+model haracteristic {
+  haracteristic_id    Int                   @id(map: "PK_Сharacteristic") @default(autoincrement()) @map("Сharacteristic_id")
+  haracteristic       String                @map("Сharacteristic") @db.NVarChar(50)
+  CharacteristicValue CharacteristicValue[] @relation("CharacteristicValueTo_haracteristic")
+
+  @@map("Сharacteristic")
+}
